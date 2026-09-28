@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Section Controller Command Center — RailSync Mobile</title>
+<style>
+  :root {
+    --blue: #0052CC;
+    --blue-dark: #002D72;
+    --blue-pale: #E8F0FE;
+    --orange: #FF6B35;
+    --orange-pale: #FFF0EB;
+    --green: #00875A;
+    --green-pale: #E3FCEF;
+    --red: #DE350B;
+    --red-pale: #FFEBE6;
+    --purple: #7C3AED;
+    --yellow: #B45309;
+    --yellow-pale: #FFFBEB;
+    --gray-50: #F8FAFC;
+    --gray-100: #F1F5F9;
+    --gray-200: #E2E8F0;
+    --gray-400: #94A3B8;
+    --gray-600: #475569;
+    --gray-800: #1E293B;
+    --white: #FFFFFF;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
+    --radius: 16px;
+    --nav-h: 60px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+  body {
+    background: #0F172A; color: var(--gray-800); min-height: 100vh;
+    display: flex; justify-content: center; align-items: center; padding: 12px;
+  }
+
+  /* FLUID MOBILE CONTAINER */
+  .mobile-app {
+    width: 100%; max-width: 440px; background: var(--gray-50);
+    border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    overflow: hidden; display: flex; flex-direction: column; position: relative;
+    padding-bottom: var(--nav-h); animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+    color: white; padding: 18px 18px 14px; position: relative;
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .header-title { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+  .header-badge { font-size: 10px; font-weight: 800; background: var(--green); color: white; padding: 2px 8px; border-radius: 10px; }
+
+  .user-strip { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.12); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; margin-top: 6px; }
+  .u-info { display: flex; align-items: center; gap: 8px; }
+  .u-avatar { width: 30px; height: 30px; border-radius: 50%; background: white; color: var(--blue-dark); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .u-name { font-size: 12px; font-weight: 800; }
+  .u-post { font-size: 10px; opacity: 0.85; }
+
+  /* SCROLL CONTENT */
+  .app-body { padding: 14px; overflow-y: auto; flex: 1; }
+
+  /* TRIGGER BAR */
+  .action-box { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm); }
+  .status-text { font-size: 11px; font-weight: 800; color: var(--green); display: flex; align-items: center; gap: 6px; }
+  .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+  .trigger-btn { width: 100%; padding: 10px; border-radius: 10px; font-size: 11px; font-weight: 800; background: var(--orange-pale); color: var(--orange); border: 1px solid #FDBA74; cursor: pointer; transition: all 0.2s; }
+  .trigger-btn:active { transform: scale(0.98); }
+
+  /* RE-SCHEDULING DISRUPTION BANNER */
+  .re-banner {
+    background: var(--yellow-pale); border: 1.5px solid #FCD34D; border-radius: 14px;
+    padding: 12px 14px; margin-bottom: 12px; display: none; flex-direction: column; gap: 10px;
+    animation: slideDown 0.3s ease;
+  }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  .re-title { font-size: 12px; font-weight: 800; color: #92400E; display: flex; align-items: center; gap: 6px; }
+  .re-desc { font-size: 11px; color: #B45309; line-height: 1.4; }
+  .re-btn { padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; background: #B45309; color: white; border: none; cursor: pointer; text-align: center; }
+
+  /* GANTT TIMELINE CARD */
+  .card { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+  .card-head { font-size: 13px; font-weight: 800; color: var(--gray-800); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+  .card-sub { font-size: 10px; color: var(--gray-400); margin-bottom: 10px; }
+
+  .gantt-wrap { overflow-x: auto; padding-bottom: 6px; }
+  .gantt-grid { min-width: 600px; display: flex; flex-direction: column; gap: 8px; }
+  .gantt-hours { display: grid; grid-template-columns: 80px repeat(12, 1fr); gap: 2px; font-size: 9px; font-weight: 700; color: var(--gray-400); text-align: center; }
+  .gantt-row { display: grid; grid-template-columns: 80px 1fr; gap: 8px; align-items: center; }
+  .gantt-lbl { font-size: 10px; font-weight: 800; color: var(--gray-600); text-align: right; }
+  .gantt-track { background: var(--gray-100); height: 26px; border-radius: 6px; position: relative; overflow: visible; }
+  
+  .gantt-block {
+    position: absolute; top: 3px; height: 20px; border-radius: 4px; color: white; font-size: 9px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; white-space: nowrap; padding: 0 6px;
+  }
+  .gb-train { background: var(--red); }
+  .gb-train-delayed { background: #B45309; border: 1px solid #FCD34D; }
+  .gb-pway { background: var(--blue); }
+  .gb-bundled { background: linear-gradient(90deg, var(--blue) 0%, var(--orange) 50%, var(--purple) 100%); }
+
+  /* STATUTORY RULES CARDS (MOBILE FRIENDS STACK) */
+  .rule-card { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+  .rc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .rc-code { font-size: 11px; font-weight: 800; color: var(--blue); }
+  .rc-badge { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+  .b-imr { background: var(--red-pale); color: var(--red); }
+  .b-rules { background: var(--orange-pale); color: var(--orange); }
+  .b-bundle { background: var(--blue-pale); color: var(--blue); }
+  .rc-desc { font-size: 11px; color: var(--gray-600); margin-bottom: 8px; line-height: 1.3; }
+  .act-btn { width: 100%; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; background: var(--green); color: white; transition: all 0.2s; }
+  .act-btn:active { transform: scale(0.98); }
+
+  /* MODAL FOR RE-SCHEDULING */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--white); border-radius: 24px 24px 0 0; width: 100%; max-width: 440px; box-shadow: var(--shadow-md); overflow: hidden; animation: popUp 0.3s ease; }
+  @keyframes popUp { from { opacity:0; transform:translateY(100%); } to { opacity:1; transform:translateY(0); } }
+  .modal-head { padding: 14px 16px; background: var(--blue-dark); color: white; display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { font-size: 13px; font-weight: 800; }
+  .modal-body { padding: 16px; }
+  .modal-foot { padding: 12px 16px; border-top: 1px solid var(--gray-200); display: flex; gap: 8px; justify-content: flex-end; background: var(--gray-50); }
+
+  .opt-card { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+  .opt-card.selected { border-color: var(--blue); background: var(--blue-pale); }
+  .opt-title { font-size: 12px; font-weight: 800; color: var(--gray-800); }
+  .opt-desc { font-size: 10px; color: var(--gray-600); margin-top: 2px; }
+
+  /* BOTTOM NAVIGATION BAR */
+  .bottom-nav {
+    position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-h);
+    background: var(--white); border-top: 1px solid var(--gray-200);
+    display: flex; align-items: center; justify-content: space-around; z-index: 100;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; font-weight: 800; color: var(--gray-400); cursor: pointer; text-decoration: none; }
+  .nav-item.active { color: var(--blue); }
+  .nav-icon { font-size: 18px; }
+
+  /* TOAST */
+  .toast-box { position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); z-index: 999; }
+  .toast-item { background: var(--gray-800); color: white; padding: 10px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; text-align: center; box-shadow: var(--shadow-md); }
+</style>
+</head>
+<body>
+
+<div class="mobile-app">
+  
+  <!-- APP HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-title">🎛️ Section Controller</div>
+      <span class="header-badge">COA Live API</span>
+    </div>
+    <div class="user-strip">
+      <div class="u-info">
+        <div class="u-avatar">RC</div>
+        <div>
+          <div class="u-name">Rajesh Chandra</div>
+          <div class="u-post">Control Office · Vadodara Division</div>
+        </div>
+      </div>
+      <a href="index.html" style="color:white;text-decoration:none;font-size:14px;">🚪</a>
+    </div>
+  </div>
+
+  <!-- MAIN SCROLL BODY -->
+  <div class="app-body">
+
+    <!-- ACTION TRIGGER BAR -->
+    <div class="action-box">
+      <div class="status-text" id="statusText"><span class="pulse-dot"></span> Fixed Schedule Active: Zero Corridor Conflicts</div>
+      <button class="trigger-btn" onclick="triggerTrainDelaySim()">⚡ Simulate Live Train Delay Event (+42m Rajdhani)</button>
+    </div>
+
+    <!-- DYNAMIC DELAY BANNER (SHOWN ON EVENT) -->
+    <div class="re-banner" id="reBanner">
+      <div class="re-title">🚆 Train Delay Alert from Station Master</div>
+      <div class="re-desc">Train 12952 (Rajdhani Express) is delayed by +42m. AI Engine 1 recommends shifting your block start from 11:00 AM to 14:00 PM. Awaiting Section Controller approval.</div>
+      <button class="re-btn" onclick="openRescheduleModal()">Review AI Recommendation & Grant →</button>
+    </div>
+
+    <!-- GANTT TIMELINE CARD -->
+    <div class="card">
+      <div class="card-head">
+        <div>Live Corridor Gantt Schedule (Km 0–129)</div>
+      </div>
+      <div class="card-sub">Swipe left/right to view full 12-hour timeline</div>
+      <div class="gantt-wrap">
+        <div class="gantt-grid">
+          <div class="gantt-hours">
+            <div>Corridor</div>
+            <div>08:00</div><div>09:00</div><div>10:00</div><div>11:00</div><div>12:00</div>
+            <div>13:00</div><div>14:00</div><div>15:00</div><div>16:00</div><div>17:00</div><div>18:00</div><div>19:00</div>
+          </div>
+
+          <div class="gantt-row">
+            <div class="gantt-lbl">🚆 Trains</div>
+            <div class="gantt-track">
+              <div class="gantt-block gb-train" style="left:8.3%;width:16.6%;">12951 Rajdhani</div>
+              <div class="gantt-block gb-train" style="left:25%;width:16.6%;" id="train12952Block">12952 Rajdhani (11:00)</div>
+            </div>
+          </div>
+
+          <div class="gantt-row">
+            <div class="gantt-lbl">🛤️ P-Way</div>
+            <div class="gantt-track">
+              <div class="gantt-block gb-pway" style="left:0%;width:16.6%;">TG-BRC-01</div>
+              <div class="gantt-block gb-bundled" style="left:50%;width:20.8%;" id="bundledBlockBar">Km 142 Bundled Block</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUTORY MAINTENANCE RULES CARDS -->
+    <div class="card">
+      <div class="card-head">
+        <div>AI Engine 2: Statutory Maintenance Rules</div>
+        <span style="font-size:9px;font-weight:800;background:var(--orange-pale);color:var(--orange);padding:2px 6px;border-radius:4px;">Rule Engine</span>
+      </div>
+
+      <div class="rule-card">
+        <div class="rc-top">
+          <span class="rc-code">IRPWM Para 4.1 (P-Way)</span>
+          <span class="rc-badge b-imr">24h Mandate</span>
+        </div>
+        <div class="rc-desc">IMR Rail Fracture Defect at Km 142.4 — Hard 24-Hour Repair Mandate.</div>
+        <button class="act-btn" onclick="grantBlock('IRPWM Para 4.1')">Grant Block ✍️</button>
+      </div>
+
+      <div class="rule-card">
+        <div class="rc-top">
+          <span class="rc-code">IRPWM Para 4.2 (P-Way)</span>
+          <span class="rc-badge b-rules">Day 13 of 14d Limit</span>
+        </div>
+        <div class="rc-desc">Track Geometry Car OMS Peak Inspection — Mandated within 14 days.</div>
+        <button class="act-btn" onclick="grantBlock('IRPWM Para 4.2')">Grant Block ✍️</button>
+      </div>
+
+      <div class="rule-card">
+        <div class="rc-top">
+          <span class="rc-code">ACTM Vol II (TRD)</span>
+          <span class="rc-badge b-bundle">30d OHE Cycle</span>
+        </div>
+        <div class="rc-desc">Contact Wire Thickness Check — Bundled into Km 142 Corridor Slot.</div>
+        <button class="act-btn" onclick="grantBlock('ACTM Vol II')">Grant Block ✍️</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="showToast('Dashboard active.')">
+      <div class="nav-icon">📊</div>
+      <div>Gantt</div>
+    </div>
+    <div class="nav-item" onclick="triggerTrainDelaySim()">
+      <div class="nav-icon">⚠️</div>
+      <div>Simulate Delay</div>
+    </div>
+    <div class="nav-item" onclick="showToast('Statutory Rules Matrix: 100% Compliant')">
+      <div class="nav-icon">⚖️</div>
+      <div>IR Rules</div>
+    </div>
+    <a href="index.html" class="nav-item" style="color:var(--gray-400);">
+      <div class="nav-icon">🚪</div>
+      <div>Logout</div>
+    </a>
+  </div>
+
+  <div class="toast-box" id="toastBox"></div>
+
+</div>
+
+<!-- RE-SCHEDULING BOTTOM MODAL -->
+<div class="modal-overlay" id="rescheduleModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">⚡ Train Delay Recommendation</div>
+      <button style="background:none;border:none;color:white;font-size:16px;cursor:pointer;" onclick="closeRescheduleModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--gray-600);margin-bottom:10px;line-height:1.4;">
+        <strong>Live Train Delay Reported:</strong> Train 12952 (Rajdhani Express) is delayed by +42m. AI Engine 1 recommends shifting your block start from 11:00 AM to 14:00 PM. Awaiting Section Controller approval.
+      </div>
+
+      <div class="opt-card selected" id="optA" onclick="selectOption('A')">
+        <div class="opt-title">Option A: Shift Block Start to 14:00 PM (Recommended)</div>
+        <div class="opt-desc">Shift Corridor Block to 14:00–16:30 PM. Rajdhani Express passes safely at 11:42 AM with zero delay.</div>
+      </div>
+
+      <div class="opt-card" id="optB" onclick="selectOption('B')">
+        <div class="opt-title">Option B: Execute 30-Min Track Work Only</div>
+        <div class="opt-desc">Execute urgent P-Way rail welding immediately (11:00–11:30 AM). Defer TRD inspection.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="act-btn" style="background:var(--green);" onclick="applySelectedOption()">Approve AI Recommendation ✍️</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedOpt = 'A';
+
+function showToast(msg) {
+  const b = document.getElementById('toastBox');
+  b.innerHTML = `<div class="toast-item">ℹ️ ${msg}</div>`;
+  setTimeout(() => { b.innerHTML = ''; }, 3000);
+}
+
+function triggerTrainDelaySim() {
+  document.getElementById('train12952Block').className = 'gantt-block gb-train-delayed';
+  document.getElementById('train12952Block').textContent = '12952 Rajdhani (+42m)';
+  document.getElementById('reBanner').style.display = 'flex';
+  document.getElementById('statusText').style.color = 'var(--orange)';
+  document.getElementById('statusText').innerHTML = '⚠️ LIVE ALERT: Train Delay Detected (+42m Rajdhani).';
+  showToast('Train Delay Alert Triggered! AI recommendation ready.');
+}
+
+function openRescheduleModal() {
+  document.getElementById('rescheduleModal').classList.add('open');
+}
+
+function closeRescheduleModal() {
+  document.getElementById('rescheduleModal').classList.remove('open');
+}
+
+function selectOption(opt) {
+  selectedOpt = opt;
+  document.getElementById('optA').classList.toggle('selected', opt === 'A');
+  document.getElementById('optB').classList.toggle('selected', opt === 'B');
+}
+
+function applySelectedOption() {
+  closeRescheduleModal();
+  if (selectedOpt === 'A') {
+    document.getElementById('bundledBlockBar').style.left = '50%';
+    document.getElementById('reBanner').style.background = 'var(--green-pale)';
+    document.getElementById('reBanner').style.borderColor = 'var(--green)';
+    document.getElementById('reBanner').innerHTML = `
+      <div style="font-size:12px;font-weight:800;color:var(--green);">✅ AI Recommendation Approved & Signed</div>
+      <div style="font-size:11px;color:var(--gray-600);margin-top:2px;">Block shifted from 11:00 AM to 14:00 PM. Rajdhani Express passed safely. Disconnection memo sent to Station Master.</div>`;
+    showToast('Block shifted to 14:00 PM. BDMS & Station Master notified.');
+  }
+}
+
+function grantBlock(ruleCode) {
+  showToast(`Block for ${ruleCode} granted by Section Controller.`);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Rail Setu - Decision Support System | Indian Railways</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FFFFFF">
+  <style>
+    :root {
+      --navy: #0E2A47;
+      --navy-light: #1A365D;
+      --slate: #334155;
+      --blue: #0284C7;
+      --blue-subtle: #F0F9FF;
+      --blue-border: #BAE6FD;
+      --green: #16A34A;
+      --green-subtle: #F0FDF4;
+      --green-border: #BBF7D0;
+      --amber: #D97706;
+      --amber-subtle: #FFFBEB;
+      --amber-border: #FDE68A;
+      --red: #DC2626;
+      --red-subtle: #FEF2F2;
+      --red-border: #FECACA;
+      --bg: #FFFFFF;
+      --card-bg: #FFFFFF;
+      --subtle-bg: #F8FAFC;
+      --border: #E2E8F0;
+      --border-dark: #CBD5E1;
+      --text-main: #0F172A;
+      --text-muted: #475569;
+      --text-light: #64748B;
+      --radius: 6px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--subtle-bg);
+      color: var(--text-main);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* SVG Icon Helpers */
+    .icon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      vertical-align: middle;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+    .icon-sm { width: 14px; height: 14px; }
+    .icon-lg { width: 22px; height: 22px; }
+
+    /* Government Official Top Banner */
+    .gov-strip {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+    .gov-title {
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pulse-online {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--green);
+      font-weight: 700;
+    }
+    .dot-green {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+    }
+
+    /* Primary Application Bar */
+    .app-bar {
+      background: #FFFFFF;
+      border-bottom: 2px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo-badge {
+      width: 36px;
+      height: 36px;
+      background: var(--navy);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      border-radius: 4px;
+      letter-spacing: -0.5px;
+    }
+    .brand-text h1 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: 0.5px;
+      line-height: 1.1;
+    }
+    .brand-text span {
+      font-size: 10.5px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Role Profile Switcher Pill */
+    .role-switcher-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .current-role-badge {
+      background: var(--blue-subtle);
+      border: 1px solid var(--blue-border);
+      padding: 5px 10px;
+      border-radius: 4px;
+      text-align: right;
+    }
+    .current-user-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .current-user-dept {
+      font-size: 10.5px;
+      color: var(--blue);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    /* Department Switching Strip */
+    .dept-tabs-nav {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .dept-tabs-nav::-webkit-scrollbar { display: none; }
+    .dept-tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 10px 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .dept-tab-btn:hover {
+      color: var(--navy);
+      background: var(--subtle-bg);
+    }
+    .dept-tab-btn.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+      background: var(--blue-subtle);
+      font-weight: 700;
+    }
+
+    /* Main Container (100% Fluid Responsive) */
+    .page-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 14px auto;
+      padding: 0 14px;
+      flex: 1;
+    }
+
+    /* Guided Onboarding Banner (Tells New Users Exactly What To Do) */
+    .guide-banner {
+      background: #FFFFFF;
+      border: 1px solid var(--blue-border);
+      border-left: 4px solid var(--blue);
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .guide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .guide-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .guide-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .guide-step-card {
+      background: var(--subtle-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 11.5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .guide-step-card:hover {
+      background: var(--blue-subtle);
+      border-color: var(--blue-border);
+    }
+    .guide-step-num {
+      font-weight: 700;
+      color: var(--blue);
+      font-size: 10.5px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+    .guide-step-desc {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Common Card Styles */
+    .card {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 12px 14px;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .card-body {
+      padding: 14px;
+    }
+
+    /* Buttons (Enterprise Clean) */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-sm { padding: 5px 9px; font-size: 11.5px; }
+    .btn-primary { background: var(--blue); color: #FFFFFF; border-color: var(--blue); }
+    .btn-primary:hover { background: #0369A1; }
+    .btn-success { background: var(--green); color: #FFFFFF; border-color: var(--green); }
+    .btn-success:hover { background: #15803D; }
+    .btn-danger { background: var(--red); color: #FFFFFF; border-color: var(--red); }
+    .btn-danger:hover { background: #B91C1C; }
+    .btn-outline { background: #FFFFFF; color: var(--navy); border-color: var(--border-dark); }
+    .btn-outline:hover { background: var(--subtle-bg); border-color: var(--navy); }
+
+    /* Tags / Chips */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .tag-blue { background: var(--blue-subtle); color: var(--blue); border: 1px solid var(--blue-border); }
+    .tag-green { background: var(--green-subtle); color: var(--green); border: 1px solid var(--green-border); }
+    .tag-amber { background: var(--amber-subtle); color: var(--amber); border: 1px solid var(--amber-border); }
+    .tag-red { background: var(--red-subtle); color: var(--red); border: 1px solid var(--red-border); }
+    .tag-slate { background: #F1F5F9; color: var(--slate); border: 1px solid var(--border-dark); }
+
+    /* ========================================================= */
+    /* REALISTIC "WHERE IS MY TRAIN" SECTIONAL RADAR SCHEMATIC   */
+    /* ========================================================= */
+    .radar-container {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      overflow-x: auto;
+    }
+    .radar-legend {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .radar-track-board {
+      min-width: 820px;
+      padding: 30px 10px 40px 10px;
+      position: relative;
+    }
+
+    /* Track Double Rail Line */
+    .rail-track-line {
+      position: relative;
+      height: 12px;
+      background: repeating-linear-gradient(90deg, #CBD5E1 0px, #CBD5E1 4px, #F1F5F9 4px, #F1F5F9 12px);
+      border-top: 2px solid #64748B;
+      border-bottom: 2px solid #64748B;
+      margin: 45px 0;
+    }
+    .track-label {
+      position: absolute;
+      top: -22px;
+      left: 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.5px;
+    }
+
+    /* Station Nodes */
+    .station-node {
+      position: absolute;
+      top: -32px;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 5;
+    }
+    .station-name {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+    .station-km {
+      font-size: 9.5px;
+      color: var(--text-light);
+      font-weight: 600;
+    }
+    .station-pillar {
+      width: 14px;
+      height: 14px;
+      background: #FFFFFF;
+      border: 3px solid var(--blue);
+      border-radius: 50%;
+      margin: 3px auto 0 auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Signal Indicators */
+    .signal-node {
+      position: absolute;
+      top: -12px;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 8.5px;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+    .signal-lamp {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1px solid #475569;
+      margin-bottom: 2px;
+    }
+    .signal-green { background: var(--green); box-shadow: 0 0 5px var(--green); }
+    .signal-red { background: var(--red); box-shadow: 0 0 5px var(--red); }
+    .signal-amber { background: var(--amber); box-shadow: 0 0 5px var(--amber); }
+
+    /* Active Maintenance Block Zone Highlight */
+    .maintenance-zone-highlight {
+      position: absolute;
+      top: -6px;
+      height: 24px;
+      background: rgba(220, 38, 38, 0.08);
+      border: 2px dashed var(--red);
+      border-radius: 3px;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--red);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+
+    /* High-Fidelity Train Vehicles on Track */
+    .live-train-item {
+      position: absolute;
+      top: -24px;
+      transform: translateX(-50%);
+      z-index: 10;
+      cursor: pointer;
+      transition: left 0.4s ease;
+    }
+    .train-chassis {
+      background: #FFFFFF;
+      border: 1.5px solid var(--blue);
+      border-radius: 4px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      white-space: nowrap;
+    }
+    .train-chassis.delayed {
+      border-color: var(--red);
+      background: #FFF5F5;
+      animation: alertBorder 1.5s infinite;
+    }
+    @keyframes alertBorder {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+    .train-num {
+      font-weight: 800;
+      font-size: 11px;
+      color: var(--navy);
+    }
+    .train-badge-speed {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #FFFFFF;
+      background: var(--blue);
+      padding: 1px 5px;
+      border-radius: 2px;
+    }
+    .train-badge-speed.late { background: var(--red); }
+    .train-badge-speed.on-time { background: var(--green); }
+
+    /* Train Info Floating Cards */
+    .train-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .train-card-mini {
+      background: var(--subtle-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px;
+      font-size: 12px;
+    }
+    .train-card-mini-title {
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    /* Grid Formats */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    /* Table Styles */
+    .clean-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+    .clean-table th {
+      background: var(--subtle-bg);
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10.5px;
+      letter-spacing: 0.5px;
+      text-align: left;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .clean-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+    }
+    .clean-table tr:hover {
+      background: var(--subtle-bg);
+    }
+
+    /* Action Checklist / Steps */
+    .check-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 8px;
+      background: #FFFFFF;
+    }
+    .check-step.done {
+      background: var(--green-subtle);
+      border-color: var(--green-border);
+    }
+    .check-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-light);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .check-step.done .check-circle {
+      border-color: var(--green);
+      background: var(--green);
+      color: #FFFFFF;
+    }
+
+    /* Alert Banner */
+    .alert-box {
+      background: var(--red-subtle);
+      border: 1px solid var(--red-border);
+      border-left: 4px solid var(--red);
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .alert-box-text h4 { font-size: 13px; font-weight: 700; color: #991B1B; }
+    .alert-box-text p { font-size: 12px; color: #7F1D1D; margin-top: 2px; }
+
+    /* Footer */
+    .app-footer {
+      background: #FFFFFF;
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      font-size: 11.5px;
+      color: var(--text-light);
+      margin-top: auto;
+    }
+    .footer-content {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-box {
+      background: #FFFFFF;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 460px;
+      border: 1px solid var(--border-dark);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .modal-head {
+      background: var(--subtle-bg);
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--navy);
+    }
+    .modal-body {
+      padding: 16px;
+    }
+    .role-option-btn {
+      width: 100%;
+      text-align: left;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .role-option-btn:hover {
+      background: var(--blue-subtle);
+      border-color: var(--blue-border);
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 768px) {
+      .grid-2col, .grid-3col, .train-cards-grid, .guide-steps {
+        grid-template-columns: 1fr;
+      }
+      .app-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .role-switcher-box { width: 100%; justify-content: space-between; }
+      .radar-legend { flex-direction: column; align-items: flex-start; }
+    }
+
+    .hidden { display: none !important; }
+    .bold { font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Strip -->
+  <div class="gov-strip">
+    <div class="gov-title">
+      <span>GOVERNMENT OF INDIA</span>
+      <span>|</span>
+      <span>MINISTRY OF RAILWAYS</span>
+      <span>|</span>
+      <span>WESTERN RAILWAY (VADODARA DIVISION)</span>
+    </div>
+    <div class="pulse-online">
+      <span class="dot-green"></span>
+      <span>COA RAILNET GATEWAY LIVE (14ms)</span>
+    </div>
+  </div>
+
+  <!-- Main App Header Bar -->
+  <header class="app-bar">
+    <div class="brand-wrap">
+      <div class="brand-logo-badge">RS</div>
+      <div class="brand-text">
+        <h1>RAIL SETU</h1>
+        <span>AI-Powered Automatic Block Planning Decision Support System</span>
+      </div>
+    </div>
+
+    <!-- Active Profile & Role Switcher -->
+    <div class="role-switcher-box">
+      <div class="current-role-badge">
+        <div class="current-user-name" id="userNameLabel">Rajesh Chandra (IR-OPT-3021)</div>
+        <div class="current-user-dept" id="userRoleLabel">SECTION CONTROLLER | CENTRAL CONTROL</div>
+      </div>
+      <button class="btn btn-sm btn-outline" onclick="openRoleModal()">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7.5" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+        Switch Department
+      </button>
+    </div>
+  </header>
+
+  <!-- Department Navigation Bar -->
+  <nav class="dept-tabs-nav">
+    <button class="dept-tab-btn active" id="tabNavRadar" onclick="switchMainView('radar')">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="12"></line><line x1="12" y1="12" x2="20" y2="12"></line></svg>
+      Section Live Train Radar
+    </button>
+    <button class="dept-tab-btn" id="tabNavRoleScreen" onclick="switchMainView('roleScreen')">
+      <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      Department Specialized Workspace
+    </button>
+    <button class="dept-tab-btn" id="tabNavDualAI" onclick="switchMainView('dualAI')">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      Dual AI Optimization Hub
+    </button>
+    <button class="dept-tab-btn" id="tabNavMemos" onclick="switchMainView('memos')">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+      Digital e-Memos (G&amp;SR Legal)
+    </button>
+    <button class="dept-tab-btn" id="tabNavComm" onclick="switchMainView('comm')">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      Inter-Dept Operational Channel
+    </button>
+  </nav>
+
+  <!-- Page Content Container -->
+  <main class="page-container">
+
+    <!-- Guided Workflow Banner (Clear Steps for Beginners) -->
+    <div class="guide-banner" id="guideBanner">
+      <div class="guide-header">
+        <div class="guide-title">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span id="guideTitleText">Welcome Section Controller! Here are your 3 pending actions:</span>
+        </div>
+        <span class="tag tag-blue" id="guideRoleTag">Operating Protocol</span>
+      </div>
+      <div class="guide-steps" id="guideStepsContainer">
+        <div class="guide-step-card" onclick="simulateConflictTrigger()">
+          <div class="guide-step-num">Step 1: Check Delay Alerts</div>
+          <div class="guide-step-desc">Train 12952 (Rajdhani) delayed by +42 min. Click to trigger AI reschedule.</div>
+        </div>
+        <div class="guide-step-card" onclick="switchMainView('dualAI')">
+          <div class="guide-step-num">Step 2: Review AI Block Options</div>
+          <div class="guide-step-desc">AI Model 1 suggests shifting joint block to 14:00. Sanction option.</div>
+        </div>
+        <div class="guide-step-card" onclick="switchMainView('memos')">
+          <div class="guide-step-num">Step 3: Issue Caution Order</div>
+          <div class="guide-step-desc">Transmit Form T/409 Caution Order to Anand Jn Station Master.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Delay Disruption Banner -->
+    <div class="alert-box" id="conflictAlertBox">
+      <div class="alert-box-text">
+        <h4>OPERATIONAL ALERT: Train 12952 (Rajdhani Express) Delayed by +42 min</h4>
+        <p>Headway collision detected at KM 436.0 - 438.5 with planned joint maintenance. AI recommends shifting block slot.</p>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-sm btn-danger" onclick="switchMainView('dualAI')">Resolve via AI</button>
+        <button class="btn btn-sm btn-outline" onclick="resetDelayScenario()">Reset Alert</button>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 1: HIGH-QUALITY SECTION TRAIN RADAR ("Where is My Train") -->
+    <!-- ======================================================== -->
+    <div id="viewRadar">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Sectional Live Train Radar: Vadodara Jn (KM 392) to Anand Jn (KM 446)
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-sm btn-primary" onclick="simulateTrainMovement()">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+              Advance Trains (+5 KM)
+            </button>
+            <button class="btn btn-sm btn-outline" onclick="simulateConflictTrigger()">
+              Simulate Delay (+42m)
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="radar-container">
+            <div class="radar-legend">
+              <div>
+                <span class="bold" style="color:var(--navy);">Sub-Division Track Section:</span>
+                <span> BRC – BJW – RNO – NDR – VDA – ANND (54.4 Route KM)</span>
+              </div>
+              <div style="display:flex; gap:12px; font-size:11.5px;">
+                <span style="display:flex; align-items:center; gap:4px;"><span class="signal-lamp signal-green"></span> Signal Green</span>
+                <span style="display:flex; align-items:center; gap:4px;"><span class="signal-lamp signal-amber"></span> Caution Amber</span>
+                <span style="display:flex; align-items:center; gap:4px;"><span class="signal-lamp signal-red"></span> Danger Red (Active Block)</span>
+              </div>
+            </div>
+
+            <div class="radar-track-board">
+              <!-- UP LINE (Towards New Delhi) -->
+              <div class="track-label">UP LINE (TOWARD NEW DELHI):</div>
+              <div class="rail-track-line">
+                <!-- Stations -->
+                <div class="station-node" style="left: 0%;">
+                  <div class="station-name">BRC (VADODARA)</div>
+                  <div class="station-km">KM 392.4</div>
+                  <div class="station-pillar"></div>
+                </div>
+
+                <div class="station-node" style="left: 20%;">
+                  <div class="station-name">BAJVA</div>
+                  <div class="station-km">KM 403.1</div>
+                  <div class="station-pillar"></div>
+                </div>
+
+                <div class="station-node" style="left: 44%;">
+                  <div class="station-name">RANOLI</div>
+                  <div class="station-km">KM 416.3</div>
+                  <div class="station-pillar"></div>
+                </div>
+
+                <div class="station-node" style="left: 68%;">
+                  <div class="station-name">VASAD JN</div>
+                  <div class="station-km">KM 430.5</div>
+                  <div class="station-pillar"></div>
+                </div>
+
+                <div class="station-node" style="left: 100%;">
+                  <div class="station-name">ANAND JN</div>
+                  <div class="station-km">KM 446.8</div>
+                  <div class="station-pillar"></div>
+                </div>
+
+                <!-- Intermediate Signals -->
+                <div class="signal-node" style="left: 32%;">
+                  <div class="signal-lamp signal-green"></div>
+                  <div>S-408</div>
+                </div>
+                <div class="signal-node" style="left: 56%;">
+                  <div class="signal-lamp signal-amber"></div>
+                  <div>S-422</div>
+                </div>
+                <div class="signal-node" style="left: 77%;">
+                  <div class="signal-lamp signal-red"></div>
+                  <div>S-435</div>
+                </div>
+
+                <!-- Active Maintenance Block Zone (KM 436.0 to 438.5) -->
+                <div class="maintenance-zone-highlight" style="left: 78%; width: 11%;">
+                  ACTIVE BLOCK ZONE (KM 436 - 438)
+                </div>
+
+                <!-- Train 1: 12952 Rajdhani -->
+                <div class="live-train-item" id="radarRajdhani" style="left: 46%;">
+                  <div class="train-chassis delayed">
+                    <svg class="icon icon-sm" style="color:var(--red);" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path></svg>
+                    <span class="train-num">12952 RAJDHANI</span>
+                    <span class="train-badge-speed late">+42m | 118 km/h</span>
+                  </div>
+                </div>
+
+                <!-- Train 2: Goods Train -->
+                <div class="live-train-item" id="radarGoods" style="left: 12%;">
+                  <div class="train-chassis">
+                    <svg class="icon icon-sm" style="color:var(--slate);" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
+                    <span class="train-num">BOXN COAL</span>
+                    <span class="train-badge-speed">52 km/h</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DOWN LINE (Towards Mumbai Central) -->
+              <div class="track-label" style="margin-top:20px;">DOWN LINE (TOWARD MUMBAI CENTRAL):</div>
+              <div class="rail-track-line">
+                <!-- Train 3: 20901 Vande Bharat -->
+                <div class="live-train-item" id="radarVandeBharat" style="left: 86%;">
+                  <div class="train-chassis">
+                    <svg class="icon icon-sm" style="color:var(--green);" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path></svg>
+                    <span class="train-num">20901 VANDE BHARAT</span>
+                    <span class="train-badge-speed on-time">ON TIME | 125 km/h</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Train Live Information Cards -->
+            <div class="train-cards-grid">
+              <div class="train-card-mini">
+                <div class="train-card-mini-title">
+                  <span>12952 Rajdhani Express</span>
+                  <span class="tag tag-red">+42 min Late</span>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted);">
+                  Current Location: KM 417.2 (Passing Ranoli)<br>
+                  Speed: 118 km/h | Next Stoppage: Vadodara Jn<br>
+                  <span class="bold text-danger">Safety Alert: 19.3 km from active maintenance block!</span>
+                </div>
+              </div>
+
+              <div class="train-card-mini">
+                <div class="train-card-mini-title">
+                  <span>20901 Vande Bharat</span>
+                  <span class="tag tag-green">On Time</span>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted);">
+                  Current Location: KM 440.1 (Approaching Anand Jn)<br>
+                  Speed: 125 km/h | Clear Green Aspect<br>
+                  Safe on Down Line (No maintenance conflict).
+                </div>
+              </div>
+
+              <div class="train-card-mini">
+                <div class="train-card-mini-title">
+                  <span>BOXN Freight (CC-04)</span>
+                  <span class="tag tag-blue">Looped</span>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted);">
+                  Current Location: Bajva Yard Loop Line<br>
+                  Speed: 0 km/h (Awaiting Rajdhani overtake)<br>
+                  Headway cleared for 120-minute gap.
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 2: DEPARTMENT SPECIALIZED WORKSPACES                   -->
+    <!-- ======================================================== -->
+    <div id="viewRoleScreen" class="hidden">
+
+      <!-- Dynamic Role Header -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" id="deptWorkspaceTitle">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+            Specialized Department Operations Workspace
+          </div>
+          <span class="tag tag-blue" id="deptBadgeTag">Jurisdiction Mapped</span>
+        </div>
+
+        <div class="card-body">
+
+          <!-- 1. CIVIL ENGINEERING (P-WAY) WORKSPACE -->
+          <div id="workspacePway" class="dept-workspace-pane hidden">
+            <div class="grid-2col">
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  TMS Track Defects &amp; Statutory 14-Day Compliance (ircep.gov.in)
+                </h3>
+                <div class="check-step done">
+                  <div class="check-circle">✓</div>
+                  <div>
+                    <div class="bold">IMR Rail Fracture at KM 142.4 (UP Line)</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Statutory IRPWM Para 4.1: Emergency clamp applied. Mandatory replacement within 24h.</div>
+                    <span class="tag tag-red">Criticality: 98/100</span>
+                  </div>
+                </div>
+
+                <div class="check-step">
+                  <div class="check-circle">2</div>
+                  <div>
+                    <div class="bold">Track Geometry Car (TGC) OMS Peak > 0.15g (KM 436.8)</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Statutory IRPWM Para 4.2: Tamping mandated within 14 days (Day 12 countdown).</div>
+                    <span class="tag tag-amber">Criticality: 86/100</span>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="alert('Requisition submitted to Section Controller for Bundled Tamping Block.')" style="margin-top:8px;">
+                  Requisition DUOMAT Tamping Machine Block
+                </button>
+              </div>
+
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  P-Way Field Crew &amp; Machine Readiness
+                </h3>
+                <table class="clean-table">
+                  <tr><th>Asset / Team</th><th>Location</th><th>Status</th></tr>
+                  <tr><td>P-Way Gang #14</td><td>KM 435.5</td><td><span class="tag tag-green">On Standby</span></td></tr>
+                  <tr><td>CSM-952 Tamper</td><td>Bajva Depot</td><td><span class="tag tag-green">Fit for Run</span></td></tr>
+                  <tr><td>USFD Team #2</td><td>Ranoli</td><td><span class="tag tag-blue">Testing Complete</span></td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. ELECTRICAL / TRACTION (TRD) WORKSPACE -->
+          <div id="workspaceTrd" class="dept-workspace-pane hidden">
+            <div class="grid-2col">
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  TDMS OHE Power Block Management (railsaver.gov.in)
+                </h3>
+                <div class="check-step">
+                  <div class="check-circle">1</div>
+                  <div>
+                    <div class="bold">OHE Contact Wire Stagger &amp; Wear Check (KM 437.1)</div>
+                    <div style="font-size:11px; color:var(--text-muted);">ACTM Vol II: 30-Day Mandatory Measurement Cycle (Day 26 of 30).</div>
+                    <span class="tag tag-amber">Criticality: 79/100</span>
+                  </div>
+                </div>
+
+                <div class="check-step done">
+                  <div class="check-circle">✓</div>
+                  <div>
+                    <div class="bold">Tower Wagon #WR-88 Isolation Boundaries</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Isolators SS-435 and SS-439 ready for power shutoff once block granted.</div>
+                    <span class="tag tag-green">Ready to Bundle</span>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="alert('TRD Power Block bundled with Civil Track Tamping on UP Line.')" style="margin-top:8px;">
+                  Demand Joint OHE Power Block
+                </button>
+              </div>
+
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  OHE Sub-Station Feeder Telemetry
+                </h3>
+                <table class="clean-table">
+                  <tr><th>Traction Substation</th><th>Feeder</th><th>Voltage</th><th>Status</th></tr>
+                  <tr><td>Vasad TSS</td><td>UP Track Feeder 1</td><td>27.2 kV</td><td><span class="tag tag-green">Normal</span></td></tr>
+                  <tr><td>Anand TSS</td><td>UP Track Feeder 2</td><td>26.9 kV</td><td><span class="tag tag-green">Normal</span></td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. SIGNAL & TELECOM (S&T) WORKSPACE -->
+          <div id="workspaceSnt" class="dept-workspace-pane hidden">
+            <div class="grid-2col">
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  SMMS Signalling Maintenance (smms.indianrailways.gov.in)
+                </h3>
+                <div class="check-step">
+                  <div class="check-circle">1</div>
+                  <div>
+                    <div class="bold">Point Machine 102B Friction Test &amp; Detection Slide</div>
+                    <div style="font-size:11px; color:var(--text-muted);">IRSEM Para 7.1: Bi-weekly 15-day inspection limit. Operating current 2.8A.</div>
+                    <span class="tag tag-amber">Criticality: 72/100</span>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="switchMainView('memos')" style="margin-top:8px;">
+                  Issue Form S&amp;T 1420 Disconnection Notice
+                </button>
+              </div>
+
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  Interlocking &amp; Track Circuit Telemetry
+                </h3>
+                <table class="clean-table">
+                  <tr><th>Gear ID</th><th>Location</th><th>Operating Voltage</th><th>Health</th></tr>
+                  <tr><td>Track Circuit 102T</td><td>Anand South</td><td>1.42 V DC</td><td><span class="tag tag-green">Normal</span></td></tr>
+                  <tr><td>Point Machine 102B</td><td>Anand South</td><td>2.80 A Peak</td><td><span class="tag tag-amber">Requires Test</span></td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. STATION MASTER WORKSPACE -->
+          <div id="workspaceStationMaster" class="dept-workspace-pane hidden">
+            <div class="grid-2col">
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  Station Panel &amp; Line Clear Authority (G&amp;SR Chapter XV)
+                </h3>
+                <div class="check-step done">
+                  <div class="check-circle">✓</div>
+                  <div>
+                    <div class="bold">Verify Line Clear for Train 12952 (Rajdhani)</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Train in block section Ranoli - Vasad. Home signal cleared.</div>
+                    <span class="tag tag-green">Line Clear Granted</span>
+                  </div>
+                </div>
+
+                <div class="check-step">
+                  <div class="check-circle">2</div>
+                  <div>
+                    <div class="bold">Endorse Disconnection Memo for UP Line (KM 436 - 438)</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Confirm track protection flags and detonators placed at 600m and 1200m.</div>
+                    <span class="tag tag-amber">Awaiting Final Block Sanction</span>
+                  </div>
+                </div>
+
+                <button class="btn btn-success" onclick="alert('Station Master Endorsement signed digitally and transmitted to Controller.')" style="margin-top:8px;">
+                  Endorse Station Block Acceptance
+                </button>
+              </div>
+
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  Caution Orders to be Delivered (Form T/409)
+                </h3>
+                <table class="clean-table">
+                  <tr><th>Train No</th><th>Section</th><th>Caution Limit</th><th>Status</th></tr>
+                  <tr><td>12952 Rajdhani</td><td>KM 436 - 438</td><td>TSR 30 km/h</td><td><span class="tag tag-green">Ready to Deliver</span></td></tr>
+                  <tr><td>BOXN Goods</td><td>KM 436 - 438</td><td>TSR 20 km/h</td><td><span class="tag tag-blue">Generated</span></td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. DIVISIONAL OFFICER (SR. DEN / DRM) WORKSPACE -->
+          <div id="workspaceOfficer" class="dept-workspace-pane hidden">
+            <div class="grid-2col">
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  Divisional Asset Availability KPI Overview
+                </h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+                  <div style="background:var(--subtle-bg); padding:10px; border-radius:4px; border:1px solid var(--border);">
+                    <div style="font-size:11px; color:var(--text-muted);">ASSET AVAILABILITY</div>
+                    <div style="font-size:20px; font-weight:800; color:var(--green);">87.4%</div>
+                    <div style="font-size:10px; color:var(--green);">+7.69% vs Previous Quarter</div>
+                  </div>
+                  <div style="background:var(--subtle-bg); padding:10px; border-radius:4px; border:1px solid var(--border);">
+                    <div style="font-size:11px; color:var(--text-muted);">BUNDLED MEGA-BLOCKS</div>
+                    <div style="font-size:20px; font-weight:800; color:var(--blue);">3.2x</div>
+                    <div style="font-size:10px; color:var(--blue);">58% Net Downtime Saved</div>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="alert('Monthly Master Corridor Block Schedule Sanctioned by Sr. DEN.')">
+                  Sanction Monthly Master Plan
+                </button>
+              </div>
+
+              <div>
+                <h3 style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;">
+                  Cross-Departmental Conflict Resolution
+                </h3>
+                <div style="font-size:12px; color:var(--text-muted); background:var(--subtle-bg); padding:10px; border-radius:4px; border:1px solid var(--border);">
+                  <div class="bold" style="color:var(--navy);">Rule-Based Override Authority:</div>
+                  When Civil Engineering and TRD requests overlap on the same section, AI Model 2 prioritizes statutory safety expiry deadlines (IRPWM 14-day rule overrides routine OHE wash).
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 3: DUAL AI OPTIMIZATION & RESCHEDULING HUB            -->
+    <!-- ======================================================== -->
+    <div id="viewDualAI" class="hidden">
+      <div class="grid-2col">
+
+        <!-- AI Model 1: Coordinated Block Scheduler -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              AI Model 1: Multi-Dept Mega-Block Bundler
+            </div>
+            <span class="tag tag-green">Downtime Cut: 58%</span>
+          </div>
+
+          <div class="card-body">
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+              Mixed-Integer Linear Programming (MILP via Google OR-Tools) combines 3 separate departmental requests into a single corridor window:
+            </p>
+
+            <div style="background:var(--subtle-bg); border:1px solid var(--border); border-radius:4px; padding:12px; margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:var(--navy);">
+                <span>UP LINE CORRIDOR (KM 436 - 438)</span>
+                <span class="tag tag-amber" id="aiSlotTag">Recommended Slot: 14:00 - 16:30</span>
+              </div>
+              <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                • Civil (P-Way): Track Tamping (120m)<br>
+                • Traction (TRD): OHE Wire Inspection (150m)<br>
+                • Signalling (S&amp;T): Point 102B Current Check (45m)
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border); padding-top:10px;">
+              <h4 style="font-size:12.5px; font-weight:700; color:var(--navy); margin-bottom:4px;">
+                Human-in-the-Loop Sanction Protocol:
+              </h4>
+              <p style="font-size:11.5px; color:var(--text-muted); margin-bottom:8px;">
+                AI advises; Section Controller authorizes final grant.
+              </p>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-sm btn-success" onclick="sanctionOption('Option A (Shift to 14:00)')">
+                  Approve Option A (Full Shift)
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="sanctionOption('Option B (Compress to 45m)')">
+                  Approve Option B (Compress)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Model 2: Risk & Statutory Prioritizer -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              AI Model 2: Statutory 14-Day Priority Engine
+            </div>
+            <span class="tag tag-blue">Live TMS / TDMS / SMMS</span>
+          </div>
+
+          <div class="card-body">
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+              Scores tasks (0-100) and strictly enforces statutory maintenance deadlines:
+            </p>
+
+            <table class="clean-table">
+              <tr><th>Defect</th><th>Statutory Limit</th><th>Score</th></tr>
+              <tr>
+                <td>IMR Rail Fracture (KM 142)</td>
+                <td><span class="tag tag-red">24 Hours (Day 1)</span></td>
+                <td><span class="bold text-danger">98/100</span></td>
+              </tr>
+              <tr>
+                <td>TGC OMS Peak &gt; 0.15g (KM 436)</td>
+                <td><span class="tag tag-amber">14 Days (Day 12)</span></td>
+                <td><span class="bold text-warning">86/100</span></td>
+              </tr>
+              <tr>
+                <td>OHE Contact Wire Stagger</td>
+                <td><span class="tag tag-blue">30 Days (Day 26)</span></td>
+                <td><span class="bold">79/100</span></td>
+              </tr>
+              <tr>
+                <td>Point Machine Friction Test</td>
+                <td><span class="tag tag-blue">15 Days (Day 11)</span></td>
+                <td><span class="bold">72/100</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 4: DIGITAL E-MEMO HUB (G&SR LEGAL WORKFLOW)           -->
+    <!-- ======================================================== -->
+    <div id="viewMemos" class="hidden">
+      <div class="grid-2col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              Issue Digital Disconnection Memo (Form S&amp;T 1420 / P-Way)
+            </div>
+          </div>
+          <div class="card-body">
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+              Paperless legal document with SHA-256 digital stamp, replacing manual phone calls:
+            </div>
+            <div style="background:var(--subtle-bg); border:1px solid var(--border); padding:10px; border-radius:4px; font-size:12px; margin-bottom:10px;">
+              <div><span class="bold">Memo Type:</span> Joint Disconnection &amp; Requisition</div>
+              <div><span class="bold">Section:</span> Vasad – Anand Jn (UP Line KM 436 - 438)</div>
+              <div><span class="bold">Sanctioned Window:</span> 14:00 to 16:30 IST</div>
+              <div><span class="bold">Safety Protocol:</span> G&amp;SR Chapter XV &amp; Form T/409 Caution Order</div>
+            </div>
+            <button class="btn btn-primary" onclick="alert('Digital e-Memo #MEMO-WR-2026-984 cryptographically signed and broadcast to Station Master panel.')">
+              Digitally Sign &amp; Transmit e-Memo
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              Active Legal Verification Token
+            </div>
+            <span class="tag tag-green">Verified</span>
+          </div>
+          <div class="card-body" style="font-family:monospace; font-size:11.5px; line-height:1.6; color:var(--text-main);">
+            TOKEN: <span style="word-break:break-all; color:var(--blue);">c3b9e4a8109d9834b71e89cf2918471e9841804b7e9231456cd7894a</span><br>
+            AUTHORIZING OFFICER: Rajesh Chandra (Section Controller)<br>
+            STATION ACCEPTANCE: Anand Junction (Operating)<br>
+            STATUS: <span class="tag tag-green">Sanction Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 5: INTER-DEPARTMENT OPERATIONAL LOG                   -->
+    <!-- ======================================================== -->
+    <div id="viewComm" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Inter-Department Operational Log (Replaces Verbal Phone Calls)
+          </div>
+          <span class="tag tag-slate">Tamper-Proof Audit Trail</span>
+        </div>
+        <div class="card-body">
+          <div id="chatLogList" style="max-height:240px; overflow-y:auto; background:var(--subtle-bg); padding:10px; border:1px solid var(--border); border-radius:4px; margin-bottom:10px;">
+            <div style="background:#FFFFFF; border:1px solid var(--border); padding:8px 10px; border-radius:3px; margin-bottom:6px; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-light); font-weight:700;">
+                <span>Station Master (Anand Jn)</span><span>11:42 IST</span>
+              </div>
+              <div>Panel clear for Train 12952. Ready for joint block once train passes home signal.</div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid var(--border); padding:8px 10px; border-radius:3px; margin-bottom:6px; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-light); font-weight:700;">
+                <span>Section Controller (COA)</span><span>11:45 IST</span>
+              </div>
+              <div>Rajdhani delayed +42m. AI suggests shift to 14:00. P-Way and TRD please acknowledge.</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="commMsgInput" placeholder="Enter official operational message..." style="flex:1; padding:8px 10px; border:1px solid var(--border-dark); border-radius:4px; font-size:12.5px;">
+            <button class="btn btn-primary" onclick="sendCommMsg()">Send Log</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Role Switcher Modal -->
+  <div class="modal-backdrop hidden" id="roleModal">
+    <div class="modal-box">
+      <div class="modal-head">Switch Department Workspace (HRMS Role)</div>
+      <div class="modal-body">
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+          Select your designation to load your customized operational screen:
+        </p>
+
+        <div class="role-option-btn" onclick="selectRole('controller', 'Rajesh Chandra', 'SECTION CONTROLLER | CENTRAL CONTROL', 'Operating (COA)')">
+          <div class="bold" style="color:var(--navy);">Section Controller (Control Office)</div>
+          <div style="font-size:11px; color:var(--text-muted);">Corridor throughput, train delays, and mega-block sanctions.</div>
+        </div>
+
+        <div class="role-option-btn" onclick="selectRole('pway', 'Suresh Patil', 'SSE (P-WAY / CIVIL) | VADODARA', 'Civil Engineering')">
+          <div class="bold" style="color:var(--navy);">SSE / P-Way (Civil Engineering)</div>
+          <div style="font-size:11px; color:var(--text-muted);">TMS track defects, IRPWM 14-day OMS compliance, and tamping blocks.</div>
+        </div>
+
+        <div class="role-option-btn" onclick="selectRole('trd', 'Vikram Rathore', 'SSE (TRD / ELECTRICAL) | OHE DEPOT', 'Traction Distribution')">
+          <div class="bold" style="color:var(--navy);">SSE / TRD (Traction Distribution)</div>
+          <div style="font-size:11px; color:var(--text-muted);">TDMS OHE wire wear, insulator wash, and power shutoff blocks.</div>
+        </div>
+
+        <div class="role-option-btn" onclick="selectRole('snt', 'Amit Verma', 'SSE (S&T / SIGNALS) | ANAND JN', 'Signalling & Telecom')">
+          <div class="bold" style="color:var(--navy);">SSE / S&amp;T (Signalling &amp; Telecom)</div>
+          <div style="font-size:11px; color:var(--text-muted);">SMMS point machines, track circuits, and Form S&amp;T 1420 notices.</div>
+        </div>
+
+        <div class="role-option-btn" onclick="selectRole('stationmaster', 'Manoj Deshmukh', 'STATION MASTER | ANAND JUNCTION', 'Operating Panel')">
+          <div class="bold" style="color:var(--navy);">Station Master (Anand Junction)</div>
+          <div style="font-size:11px; color:var(--text-muted);">Panel line clear, caution order T/409, and physical track possession.</div>
+        </div>
+
+        <div class="role-option-btn" onclick="selectRole('officer', 'D. K. Sharma', 'SR. DEN (CO-ORDINATION) | DRM OFFICE', 'Divisional Management')">
+          <div class="bold" style="color:var(--navy);">Divisional Officer (Sr. DEN / DRM Office)</div>
+          <div style="font-size:11px; color:var(--text-muted);">Corridor availability KPIs, inter-dept disputes, and monthly plans.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Official Footer -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div>
+        <span class="bold" style="color:var(--navy);">Rail Setu: AI-Powered Automatic Block Planning Decision Support System</span><br>
+        <span>Ministry of Railways, Government of India | In compliance with IRPWM 2020, ACTM Vol II, IRSEM, and G&amp;SR Chapter XV.</span>
+      </div>
+      <div>
+        <span>RailNet Helpdesk: Intercom 4410 | Centre for Railway Information Systems (CRIS)</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let currentRoleKey = 'controller';
+
+    function switchMainView(viewId) {
+      document.getElementById('viewRadar').classList.add('hidden');
+      document.getElementById('viewRoleScreen').classList.add('hidden');
+      document.getElementById('viewDualAI').classList.add('hidden');
+      document.getElementById('viewMemos').classList.add('hidden');
+      document.getElementById('viewComm').classList.add('hidden');
+
+      document.querySelectorAll('.dept-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      if (viewId === 'radar') {
+        document.getElementById('viewRadar').classList.remove('hidden');
+        document.getElementById('tabNavRadar').classList.add('active');
+      } else if (viewId === 'roleScreen') {
+        document.getElementById('viewRoleScreen').classList.remove('hidden');
+        document.getElementById('tabNavRoleScreen').classList.add('active');
+      } else if (viewId === 'dualAI') {
+        document.getElementById('viewDualAI').classList.remove('hidden');
+        document.getElementById('tabNavDualAI').classList.add('active');
+      } else if (viewId === 'memos') {
+        document.getElementById('viewMemos').classList.remove('hidden');
+        document.getElementById('tabNavMemos').classList.add('active');
+      } else if (viewId === 'comm') {
+        document.getElementById('viewComm').classList.remove('hidden');
+        document.getElementById('tabNavComm').classList.add('active');
+      }
+    }
+
+    function openRoleModal() {
+      document.getElementById('roleModal').classList.remove('hidden');
+    }
+
+    function selectRole(roleKey, name, roleTitle, dept) {
+      currentRoleKey = roleKey;
+      document.getElementById('userNameLabel').innerText = name;
+      document.getElementById('userRoleLabel').innerText = roleTitle;
+      document.getElementById('roleModal').classList.add('hidden');
+
+      // Update Department Workspace
+      document.querySelectorAll('.dept-workspace-pane').forEach(el => el.classList.add('hidden'));
+
+      if (roleKey === 'controller') {
+        document.getElementById('deptWorkspaceTitle').innerText = 'Section Controller Command Workspace';
+        document.getElementById('deptBadgeTag').innerText = 'COA Master Dispatch';
+        updateGuideSteps('Section Controller', [
+          'Step 1: Check Delay Alerts - Train 12952 (+42m)',
+          'Step 2: Review Dual AI Options - Sanction Option A (14:00)',
+          'Step 3: Issue Caution Order - Form T/409 to Station Master'
+        ]);
+        switchMainView('radar');
+      } else if (roleKey === 'pway') {
+        document.getElementById('workspacePway').classList.remove('hidden');
+        document.getElementById('deptWorkspaceTitle').innerText = 'Civil Engineering (P-Way) Track Maintenance Workspace';
+        document.getElementById('deptBadgeTag').innerText = 'TMS 14-Day Statutory Compliance';
+        updateGuideSteps('SSE (P-Way)', [
+          'Step 1: Inspect 14-Day OMS Peak - Day 12 of 14 deadline',
+          'Step 2: Requisition Tamping Block - Request DUOMAT Machine',
+          'Step 3: Confirm Track Gang Readiness - Position at KM 435'
+        ]);
+        switchMainView('roleScreen');
+      } else if (roleKey === 'trd') {
+        document.getElementById('workspaceTrd').classList.remove('hidden');
+        document.getElementById('deptWorkspaceTitle').innerText = 'Traction Distribution (TRD / Electrical) Workspace';
+        document.getElementById('deptBadgeTag').innerText = 'TDMS OHE Power Block';
+        updateGuideSteps('SSE (TRD)', [
+          'Step 1: Check OHE Wire Wear - 30-day inspection cycle',
+          'Step 2: Bundle Power Block - Merge with P-Way track block',
+          'Step 3: Confirm Feeder Isolators - SS-435 & SS-439'
+        ]);
+        switchMainView('roleScreen');
+      } else if (roleKey === 'snt') {
+        document.getElementById('workspaceSnt').classList.remove('hidden');
+        document.getElementById('deptWorkspaceTitle').innerText = 'Signal & Telecom (S&T) Workspace';
+        document.getElementById('deptBadgeTag').innerText = 'SMMS Form S&T 1420 Notice';
+        updateGuideSteps('SSE (S&T)', [
+          'Step 1: Check Point 102B Currents - Bi-weekly 15-day limit',
+          'Step 2: Issue Form S&T 1420 - Digital Disconnection Memo',
+          'Step 3: Test Detection Slide - Ensure safe reverse locking'
+        ]);
+        switchMainView('roleScreen');
+      } else if (roleKey === 'stationmaster') {
+        document.getElementById('workspaceStationMaster').classList.remove('hidden');
+        document.getElementById('deptWorkspaceTitle').innerText = 'Station Master Operating Panel (Anand Junction)';
+        document.getElementById('deptBadgeTag').innerText = 'G&SR Line Clear Authority';
+        updateGuideSteps('Station Master (Anand Jn)', [
+          'Step 1: Verify Line Clear - Allow Rajdhani to pass home signal',
+          'Step 2: Endorse Block Requisition - Confirm detonators placed',
+          'Step 3: Deliver Caution Order - Hand TSR 30 km/h to Loco Pilot'
+        ]);
+        switchMainView('roleScreen');
+      } else if (roleKey === 'officer') {
+        document.getElementById('workspaceOfficer').classList.remove('hidden');
+        document.getElementById('deptWorkspaceTitle').innerText = 'Divisional Officer (Sr. DEN / DRM Office) Oversight';
+        document.getElementById('deptBadgeTag').innerText = 'Corridor Availability 87.4%';
+        updateGuideSteps('Sr. DEN (Co-ordination)', [
+          'Step 1: Review Availability KPI - 58% downtime reduction',
+          'Step 2: Sanction Monthly Master Plan - Heavy Track Renewal',
+          'Step 3: Inter-Dept Conflict Resolution - Enforce 14-day rule'
+        ]);
+        switchMainView('roleScreen');
+      }
+    }
+
+    function updateGuideSteps(roleName, steps) {
+      document.getElementById('guideTitleText').innerText = 'Welcome ' + roleName + '! Here are your 3 guided tasks:';
+      const container = document.getElementById('guideStepsContainer');
+      container.innerHTML = `
+        <div class="guide-step-card" onclick="switchMainView('roleScreen')">
+          <div class="guide-step-num">${steps[0].split(' - ')[0]}</div>
+          <div class="guide-step-desc">${steps[0].split(' - ')[1]}</div>
+        </div>
+        <div class="guide-step-card" onclick="switchMainView('dualAI')">
+          <div class="guide-step-num">${steps[1].split(' - ')[0]}</div>
+          <div class="guide-step-desc">${steps[1].split(' - ')[1]}</div>
+        </div>
+        <div class="guide-step-card" onclick="switchMainView('memos')">
+          <div class="guide-step-num">${steps[2].split(' - ')[0]}</div>
+          <div class="guide-step-desc">${steps[2].split(' - ')[1]}</div>
+        </div>
+      `;
+    }
+
+    function simulateConflictTrigger() {
+      const rajdhani = document.getElementById('radarRajdhani');
+      rajdhani.style.left = '41%';
+      document.getElementById('conflictAlertBox').classList.remove('hidden');
+      alert('Live Telemetry Conflict: Train 12952 (Rajdhani) delayed +42m. AI Model 1 has recalculated corridor block options.');
+    }
+
+    function resetDelayScenario() {
+      const rajdhani = document.getElementById('radarRajdhani');
+      rajdhani.style.left = '46%';
+      document.getElementById('conflictAlertBox').classList.add('hidden');
+      alert('Corridor status normalized.');
+    }
+
+    function simulateTrainMovement() {
+      const raj = document.getElementById('radarRajdhani');
+      let cur = parseInt(raj.style.left) || 46;
+      cur = (cur + 6) % 92;
+      raj.style.left = cur + '%';
+      alert('COA Telemetry: Trains advanced on section. Live radar updated.');
+    }
+
+    function sanctionOption(opt) {
+      alert(opt + ' sanctioned under authorized Section Controller command. Digital e-Memos and Caution Orders generated.');
+      document.getElementById('conflictAlertBox').classList.add('hidden');
+    }
+
+    function sendCommMsg() {
+      const inp = document.getElementById('commMsgInput');
+      const val = inp.value.trim();
+      if (!val) return;
+      const user = document.getElementById('userNameLabel').innerText;
+      const list = document.getElementById('chatLogList');
+      const item = document.createElement('div');
+      item.style = 'background:#FFFFFF; border:1px solid var(--border); padding:8px 10px; border-radius:3px; margin-bottom:6px; font-size:12px;';
+      item.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-light); font-weight:700;"><span>${user}</span><span>Just now</span></div><div>${val}</div>`;
+      list.appendChild(item);
+      list.scrollTop = list.scrollHeight;
+      inp.value = '';
+    }
+  </script>
+</body>
+</html>

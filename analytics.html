@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DRM & HQ Analytics — RailSync Mobile</title>
+<style>
+  :root {
+    --blue: #0052CC;
+    --blue-dark: #002D72;
+    --blue-pale: #E8F0FE;
+    --orange: #FF6B35;
+    --orange-pale: #FFF0EB;
+    --green: #00875A;
+    --green-pale: #E3FCEF;
+    --red: #DE350B;
+    --purple: #7C3AED;
+    --gray-50: #F8FAFC;
+    --gray-100: #F1F5F9;
+    --gray-200: #E2E8F0;
+    --gray-400: #94A3B8;
+    --gray-600: #475569;
+    --gray-800: #1E293B;
+    --white: #FFFFFF;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
+    --radius: 16px;
+    --nav-h: 60px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+  body {
+    background: #0F172A; color: var(--gray-800); min-height: 100vh;
+    display: flex; justify-content: center; align-items: center; padding: 12px;
+  }
+
+  /* FLUID MOBILE CONTAINER */
+  .mobile-app {
+    width: 100%; max-width: 440px; background: var(--gray-50);
+    border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    overflow: hidden; display: flex; flex-direction: column; position: relative;
+    padding-bottom: var(--nav-h); animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+    color: white; padding: 18px 18px 14px; position: relative;
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .header-title { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+  .header-btn { padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; background: var(--green); color: white; border: none; cursor: pointer; }
+
+  .user-strip { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.12); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 12px; margin-top: 6px; }
+  .u-info { display: flex; align-items: center; gap: 8px; }
+  .u-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green); color: white; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .u-name { font-size: 12px; font-weight: 800; }
+  .u-post { font-size: 10px; opacity: 0.85; }
+
+  /* SCROLL CONTENT */
+  .app-body { padding: 14px; overflow-y: auto; flex: 1; }
+
+  /* KPI BANNER CARDS */
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .kpi-card { background: var(--white); border-radius: 14px; padding: 14px; border: 1px solid var(--gray-200); position: relative; overflow: hidden; }
+  .kpi-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--kpi-c, var(--blue)); }
+  .kpi-val { font-size: 20px; font-weight: 800; color: var(--gray-800); }
+  .kpi-lbl { font-size: 10px; color: var(--gray-400); margin-top: 2px; font-weight: 700; }
+  .kpi-sub { font-size: 9px; color: var(--green); font-weight: 800; margin-top: 4px; }
+
+  /* CARD */
+  .card { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+  .card-head { font-size: 13px; font-weight: 800; color: var(--gray-800); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+  .rule-row { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+  .rr-code { font-size: 11px; font-weight: 800; color: var(--blue); }
+  .rr-desc { font-size: 10px; color: var(--gray-600); margin-top: 2px; margin-bottom: 4px; }
+  .rr-status { font-size: 9px; font-weight: 800; background: var(--green-pale); color: var(--green); padding: 2px 6px; border-radius: 4px; display: inline-block; }
+
+  /* BOTTOM NAVIGATION */
+  .bottom-nav {
+    position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-h);
+    background: var(--white); border-top: 1px solid var(--gray-200);
+    display: flex; align-items: center; justify-content: space-around; z-index: 100;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; font-weight: 800; color: var(--gray-400); cursor: pointer; text-decoration: none; }
+  .nav-item.active { color: var(--blue); }
+  .nav-icon { font-size: 18px; }
+
+  /* TOAST */
+  .toast-box { position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); z-index: 999; }
+  .toast-item { background: var(--gray-800); color: white; padding: 10px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; text-align: center; box-shadow: var(--shadow-md); }
+</style>
+</head>
+<body>
+
+<div class="mobile-app">
+  
+  <!-- APP HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-title">📈 DRM HQ Analytics</div>
+      <button class="header-btn" onclick="exportBDMSReport()">📄 Export BDMS</button>
+    </div>
+    <div class="user-strip">
+      <div class="u-info">
+        <div class="u-avatar">DK</div>
+        <div>
+          <div class="u-name">D. K. Sharma</div>
+          <div class="u-post">DRM · Vadodara Division</div>
+        </div>
+      </div>
+      <a href="index.html" style="color:white;text-decoration:none;font-size:14px;">🚪</a>
+    </div>
+  </div>
+
+  <!-- MAIN SCROLL BODY -->
+  <div class="app-body">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-c:var(--green)">
+        <div class="kpi-val">87.4%</div>
+        <div class="kpi-lbl">Asset Availability</div>
+        <div class="kpi-sub">↑ 58% vs Pre-RailSync</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--blue)">
+        <div class="kpi-val">3.2×</div>
+        <div class="kpi-lbl">Block Bundles</div>
+        <div class="kpi-sub">AI Engine 1 Coordinated</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--orange)">
+        <div class="kpi-val">98.2%</div>
+        <div class="kpi-lbl">Statutory Compliance</div>
+        <div class="kpi-sub">AI Engine 2 Rules</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--purple)">
+        <div class="kpi-val">100%</div>
+        <div class="kpi-lbl">Human Approvals</div>
+        <div class="kpi-sub">Audit Trail Clean</div>
+      </div>
+    </div>
+
+    <!-- STATUTORY RULES COMPLIANCE MATRIX -->
+    <div class="card">
+      <div class="card-head">Statutory Rules Compliance Matrix</div>
+      
+      <div class="rule-row">
+        <div class="rr-code">IRPWM Para 4.1 (P-Way)</div>
+        <div class="rr-desc">IMR Rail Fracture Repair ≤ 24 Hours</div>
+        <span class="rr-status">100% Compliant</span>
+      </div>
+
+      <div class="rule-row">
+        <div class="rr-code">IRPWM Para 4.2 (P-Way)</div>
+        <div class="rr-desc">Track Geometry TGC OMS Inspection ≤ 14 Days</div>
+        <span class="rr-status">98.2% Compliant</span>
+      </div>
+
+      <div class="rule-row">
+        <div class="rr-code">ACTM Vol II (TRD)</div>
+        <div class="rr-desc">OHE Contact Wire Thickness Inspection ≤ 30 Days</div>
+        <span class="rr-status">96.5% Compliant</span>
+      </div>
+
+      <div class="rule-row">
+        <div class="rr-code">IRSEM Para 7.1 (S&T)</div>
+        <div class="rr-desc">Point Machine Friction & Relay Test ≤ 15 Days</div>
+        <span class="rr-status">100% Compliant</span>
+      </div>
+
+    </div>
+
+    <!-- DUAL AI ENGINE CARD -->
+    <div class="card">
+      <div class="card-head">Dual AI Engine Integration</div>
+      <div style="font-size:11px;color:var(--gray-600);line-height:1.5;">
+        • <strong>AI Engine 1 (Traffic):</strong> Integrates COA train feeds with TMS, TDMS, SMMS to bundle blocks.<br>
+        • <strong>AI Engine 2 (Rules):</strong> Enforces 24h, 14d, 30d, 15d statutory deadlines.<br>
+        <div style="margin-top:8px;padding:8px;background:var(--blue-pale);border-radius:8px;color:var(--blue);font-weight:700;">
+          🛡️ AI advises only. Final block grants are strictly manual by post designation.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="showToast('DRM Overview active.')">
+      <div class="nav-icon">📊</div>
+      <div>Overview</div>
+    </div>
+    <div class="nav-item" onclick="showToast('Statutory Rules Audit: 98.2% Compliant')">
+      <div class="nav-icon">⏱️</div>
+      <div>Rules Audit</div>
+    </div>
+    <div class="nav-item" onclick="exportBDMSReport()">
+      <div class="nav-icon">📦</div>
+      <div>BDMS Log</div>
+    </div>
+    <a href="index.html" class="nav-item" style="color:var(--gray-400);">
+      <div class="nav-icon">🚪</div>
+      <div>Logout</div>
+    </a>
+  </div>
+
+  <div class="toast-box" id="toastBox"></div>
+
+</div>
+
+<script>
+function showToast(msg) {
+  const b = document.getElementById('toastBox');
+  b.innerHTML = `<div class="toast-item">ℹ️ ${msg}</div>`;
+  setTimeout(() => { b.innerHTML = ''; }, 3000);
+}
+
+function exportBDMSReport() {
+  showToast('Official BDMS Audit PDF Report generated for DRM.');
+}
+</script>
+
+</body>
+</html>

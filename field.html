@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RailSync Mobile — Indian Railways Field PWA</title>
+<style>
+  :root {
+    --blue: #0052CC;
+    --blue-dark: #002D72;
+    --blue-pale: #E8F0FE;
+    --orange: #FF6B35;
+    --orange-pale: #FFF0EB;
+    --green: #00875A;
+    --green-pale: #E3FCEF;
+    --red: #DE350B;
+    --red-pale: #FFEBE6;
+    --yellow: #B45309;
+    --yellow-pale: #FFFBEB;
+    --gray-50: #F8FAFC;
+    --gray-100: #F1F5F9;
+    --gray-200: #E2E8F0;
+    --gray-400: #94A3B8;
+    --gray-600: #475569;
+    --gray-800: #1E293B;
+    --white: #FFFFFF;
+    --shadow-md: 0 10px 30px rgba(0,0,0,0.12);
+    --radius: 16px;
+    --nav-h: 64px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  
+  body {
+    background: #0F172A; color: var(--gray-800); min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 12px;
+    transition: all 0.3s ease;
+  }
+
+  /* DEVICE TOGGLE BAR AT TOP RIGHT */
+  .device-toggle-bar {
+    position: fixed; top: 12px; right: 18px; z-index: 1000;
+    background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 30px;
+    padding: 4px 6px; display: flex; gap: 4px; box-shadow: var(--shadow-md);
+  }
+  .toggle-btn {
+    padding: 5px 12px; border-radius: 20px; border: none; font-size: 11px; font-weight: 700;
+    cursor: pointer; background: transparent; color: rgba(255,255,255,0.7); transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .toggle-btn.active { background: #0A84FF; color: white; box-shadow: 0 2px 8px rgba(10,132,255,0.4); }
+
+  /* MOBILE PHONE SHELL (DEFAULT) */
+  .phone-shell {
+    width: 100%; max-width: 420px; height: 850px; max-height: 94vh;
+    background: var(--gray-50); border-radius: 40px; border: 10px solid #1E293B;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+    display: flex; flex-direction: column; transition: all 0.4s ease;
+  }
+
+  /* WIDESCREEN DESKTOP MODE EXPANSION */
+  body.desk-mode .phone-shell {
+    max-width: 900px; height: 800px; border-radius: 24px; border: 4px solid var(--blue-dark);
+  }
+
+  /* PHONE TOP NOTCH / STATUS BAR */
+  .status-bar {
+    background: var(--blue-dark); color: white; padding: 10px 20px 4px;
+    display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700;
+  }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+
+  /* APP HEADER */
+  .app-header {
+    background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+    color: white; padding: 16px 20px 20px; position: relative;
+  }
+  .app-header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .app-title { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .app-role-badge { font-size: 10px; font-weight: 800; background: var(--green); color: white; padding: 3px 8px; border-radius: 10px; }
+
+  .user-profile { display: flex; align-items: center; gap: 12px; }
+  .u-avatar { width: 42px; height: 42px; border-radius: 50%; background: white; color: var(--blue-dark); font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.3); }
+  .u-name { font-size: 15px; font-weight: 800; }
+  .u-post { font-size: 11px; opacity: 0.85; margin-top: 1px; }
+
+  /* SYSTEM CONNECTION STRIP */
+  .sys-strip {
+    background: var(--white); border-bottom: 1px solid var(--gray-200); padding: 8px 16px;
+    display: flex; justify-content: space-around; font-size: 10px; font-weight: 800; color: var(--gray-600);
+  }
+  .sys-item { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  .dot-green { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+
+  /* SCROLLABLE MAIN CONTENT */
+  .app-content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: calc(var(--nav-h) + 16px); }
+
+  /* DISRUPTION ALERT CARD */
+  .alert-card {
+    background: var(--yellow-pale); border: 1.5px solid #FCD34D; border-radius: var(--radius);
+    padding: 14px; margin-bottom: 14px; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .alert-icon { font-size: 22px; flex-shrink: 0; }
+  .alert-title { font-size: 13px; font-weight: 800; color: #92400E; }
+  .alert-desc { font-size: 11px; color: #B45309; margin-top: 2px; line-height: 1.4; }
+
+  /* TASK CARDS */
+  .task-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--gray-200); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow-sm); transition: transform 0.2s; }
+  .task-card:hover { transform: translateY(-2px); }
+  .tc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .tc-id { font-size: 11px; font-weight: 800; color: var(--blue); }
+  .tc-rule { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+  .r-red { background: var(--red-pale); color: var(--red); }
+  .r-orange { background: var(--orange-pale); color: var(--orange); }
+  .r-blue { background: var(--blue-pale); color: var(--blue); }
+  
+  .tc-title { font-size: 13px; font-weight: 800; color: var(--gray-800); }
+  .tc-meta { font-size: 11px; color: var(--gray-600); margin-top: 4px; display: flex; flex-direction: column; gap: 3px; }
+
+  .tc-btns { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-mob { flex: 1; padding: 9px; border-radius: 8px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; text-align: center; transition: all 0.2s; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-green { background: var(--green); color: white; }
+  .btn-green:hover { background: #006644; }
+  .btn-ghost { background: var(--gray-100); color: var(--gray-700); }
+
+  /* FORM CARD */
+  .form-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--gray-200); padding: 14px; margin-bottom: 12px; }
+  .form-title { font-size: 13px; font-weight: 800; color: var(--gray-800); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .field { margin-bottom: 10px; }
+  .label { font-size: 10px; font-weight: 800; color: var(--gray-600); text-transform: uppercase; margin-bottom: 4px; display: block; }
+  .input, .select { width: 100%; padding: 9px; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 12px; background: var(--gray-50); outline: none; font-family: inherit; }
+  .submit-btn { width: 100%; padding: 11px; background: var(--blue); color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+  .submit-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+  /* BOTTOM NATIVE APPS BAR */
+  .bottom-nav {
+    position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-h);
+    background: var(--white); border-top: 1px solid var(--gray-200);
+    display: flex; align-items: center; justify-content: space-around; z-index: 100;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; font-weight: 800; color: var(--gray-400); cursor: pointer; text-decoration: none; }
+  .nav-item.active { color: var(--blue); }
+  .nav-icon { font-size: 18px; }
+
+  /* TOAST */
+  .toast-box { position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); z-index: 999; }
+  .toast-item { background: var(--gray-800); color: white; padding: 10px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; text-align: center; box-shadow: var(--shadow-md); animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="device-toggle-bar">
+  <button class="toggle-btn active" id="btnMob" onclick="setDeviceView('mobile')">📱 Mobile View</button>
+  <button class="toggle-btn" id="btnDesk" onclick="setDeviceView('desktop')">💻 Widescreen Desktop</button>
+</div>
+
+<div class="phone-shell" id="phoneShell">
+  
+  <!-- PHONE STATUS BAR -->
+  <div class="status-bar">
+    <span>09:41 AM</span>
+    <div class="status-icons">
+      <span>📍 GPS</span>
+      <span>📶 RailNet 5G</span>
+      <span>🔋 94%</span>
+    </div>
+  </div>
+
+  <!-- APP HEADER -->
+  <div class="app-header">
+    <div class="app-header-top">
+      <div class="app-title">🛤️ RailSync Mobile</div>
+      <span class="app-role-badge" id="roleBadge">PWI Gang #14</span>
+    </div>
+    <div class="user-profile">
+      <div class="u-avatar" id="uAvatar">SP</div>
+      <div>
+        <div class="u-name" id="uName">Suresh Patil</div>
+        <div class="u-post" id="uPost">Section Senior Engineer (P-Way) · BRC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYSTEM API FEEDS STRIP -->
+  <div class="sys-strip">
+    <div class="sys-item" onclick="showToast('TMS Connected: ircep.gov.in')"><div class="dot-green"></div>TMS Feed</div>
+    <div class="sys-item" onclick="showToast('TDMS Connected: railsaver.gov.in')"><div class="dot-green"></div>TDMS Feed</div>
+    <div class="sys-item" onclick="showToast('SMMS Connected: signalling')"><div class="dot-green"></div>SMMS Feed</div>
+    <div class="sys-item" onclick="showToast('COA Live: 42 trains tracked')"><div class="dot-green"></div>COA Live</div>
+  </div>
+
+  <!-- MAIN SCROLL CONTENT -->
+  <div class="app-content">
+
+    <!-- LIVE TRAIN DELAY NOTIFICATION -->
+    <div class="alert-card">
+      <div class="alert-icon">🚆</div>
+      <div>
+        <div class="alert-title">Train Delay Alert from Station Master</div>
+        <div class="alert-desc">Train 12952 (Rajdhani) is delayed by +42m. AI Engine 1 recommends shifting your block start from 11:00 AM to 14:00 PM. Awaiting Section Controller approval.</div>
+      </div>
+    </div>
+
+    <!-- TASK 1: IMR RAIL FRACTURE (24-HOUR RULE) -->
+    <div class="task-card" style="border-color:#FCA5A5;background:#FFF5F5;">
+      <div class="tc-top">
+        <span class="tc-id" style="color:var(--red);">TASK-2026-104 (IMR DEFECT)</span>
+        <span class="tc-rule r-red">IRPWM Para 4.1 (24h Mandate)</span>
+      </div>
+      <div class="tc-title">IMR Rail Fracture Repair — Km 142.4</div>
+      <div class="tc-meta">
+        <span>📍 Location: Vadodara Division (Km 142.4)</span>
+        <span>⏰ Statutory Deadline: Hard 24h Window (Day 1)</span>
+        <span>🤖 AI Model 2 Criticality Score: 98/100</span>
+      </div>
+      <div class="tc-btns">
+        <button class="btn-mob btn-green" onclick="submitDisconnectionMemo('TASK-2026-104')">Submit Disconnection Memo ✍️</button>
+      </div>
+    </div>
+
+    <!-- TASK 2: 14-DAY TRACK GEOMETRY CHECK (IRPWM PARA 4.2) -->
+    <div class="task-card">
+      <div class="tc-top">
+        <span class="tc-id">TASK-2026-105</span>
+        <span class="tc-rule r-orange">IRPWM Para 4.2 (14d Rule)</span>
+      </div>
+      <div class="tc-title">Track Geometry TGC OMS Inspection — Km 67–72</div>
+      <div class="tc-meta">
+        <span>📍 Location: Km 67–72 (OMS Peak > 0.15g)</span>
+        <span>⏰ Deadline: Day 13 of 14-Day Mandatory Limit</span>
+        <span>🤝 Multi-Dept Bundle: Coordinated with TRD OHE</span>
+      </div>
+      <div class="tc-btns">
+        <button class="btn-mob btn-primary" onclick="showToast('Readiness confirmed for TASK-105.')">Confirm Field Readiness</button>
+        <button class="btn-mob btn-ghost" onclick="showToast('Disconnection memo #M-105 verified.')">View Memo</button>
+      </div>
+    </div>
+
+    <!-- TASK 3: S&T POINT MACHINE FRICTION TEST (15-DAY RULE) -->
+    <div class="task-card">
+      <div class="tc-top">
+        <span class="tc-id">TASK-2026-106</span>
+        <span class="tc-rule r-blue">IRSEM Para 7.1 (15d Rule)</span>
+      </div>
+      <div class="tc-title">Point Machine Friction & Obstruction Test — Km 142</div>
+      <div class="tc-meta">
+        <span>📍 Location: Km 142 Interlocking Point #4</span>
+        <span>⏰ Deadline: 15-Day Fortnightly Mandate</span>
+        <span>⚡ Department: S&T Signalling</span>
+      </div>
+      <div class="tc-btns">
+        <button class="btn-mob btn-primary" onclick="showToast('S&T team check-in complete.')">Check-in Trackside</button>
+      </div>
+    </div>
+
+    <!-- SUBMIT DISCONNECTION MEMO FORM -->
+    <div class="form-card">
+      <div class="form-title">📋 Submit Station Master Disconnection Memo</div>
+      
+      <div class="field">
+        <label class="label">Department System</label>
+        <select class="select">
+          <option>P-Way (TMS — ircep.gov.in)</option>
+          <option>TRD (TDMS — railsaver.gov.in)</option>
+          <option>S&T (SMMS — indianrailways.gov.in)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="label">Work Description & Section</label>
+        <input type="text" class="input" value="IMR Rail Joint Welding (Km 142.4)">
+      </div>
+
+      <div class="field">
+        <label class="label">Requested Duration</label>
+        <select class="select">
+          <option>2 Hours (Multi-Dept Bundled Slot)</option>
+          <option>1.5 Hours</option>
+          <option>45 Mins (Urgent Work Only)</option>
+        </select>
+      </div>
+
+      <button class="submit-btn" onclick="submitDisconnectionMemo('Custom Request')">Submit Disconnection Memo to Station Master →</button>
+    </div>
+
+  </div>
+
+  <!-- NATIVE BOTTOM MOBILE NAVIGATION -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="showToast('My Tasks tab active.')">
+      <div class="nav-icon">📋</div>
+      <div>My Tasks</div>
+    </div>
+    <div class="nav-item" onclick="showToast('Station Disconnection Memos: 100% Signed')">
+      <div class="nav-icon">📝</div>
+      <div>Disconnection</div>
+    </div>
+    <div class="nav-item" onclick="showToast('Live Train Tracking: 42 trains active')">
+      <div class="nav-icon">🚆</div>
+      <div>Live Trains</div>
+    </div>
+    <a href="index.html" class="nav-item" style="color:var(--gray-400);">
+      <div class="nav-icon">🚪</div>
+      <div>Logout</div>
+    </a>
+  </div>
+
+  <div class="toast-box" id="toastBox"></div>
+
+</div>
+
+<script>
+function setDeviceView(mode) {
+  const body = document.body;
+  const btnDesk = document.getElementById('btnDesk');
+  const btnMob = document.getElementById('btnMob');
+
+  if (mode === 'desktop') {
+    body.classList.add('desk-mode');
+    btnDesk.classList.add('active');
+    btnMob.classList.remove('active');
+    showToast('Switched to Widescreen Desktop View');
+  } else {
+    body.classList.remove('desk-mode');
+    btnMob.classList.add('active');
+    btnDesk.classList.remove('active');
+    showToast('Switched to Native Mobile Frame View');
+  }
+}
+
+function showToast(msg) {
+  const b = document.getElementById('toastBox');
+  b.innerHTML = `<div class="toast-item">ℹ️ ${msg}</div>`;
+  setTimeout(() => { b.innerHTML = ''; }, 3500);
+}
+
+function submitDisconnectionMemo(taskId) {
+  showToast(`Disconnection Memo for ${taskId} submitted to Station Master & Section Controller.`);
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('role') === 'sm') {
+  document.getElementById('uName').textContent = 'R. K. Sharma';
+  document.getElementById('uPost').textContent = 'Station Master (SM) · Surat Terminal';
+  document.getElementById('roleBadge').textContent = 'Station Master';
+  document.getElementById('uAvatar').textContent = 'SM';
+}
+</script>
+
+</body>
+</html>
